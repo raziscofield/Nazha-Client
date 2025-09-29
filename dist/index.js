@@ -2639,7 +2639,7 @@ var NodeManager = class extends import_events.EventEmitter {
 var bandCampSearch = async (player, query, requestUser) => {
   let error = null;
   let tracks = [];
-  if (player.LavalinkManager.options.advancedOptions.debugOptions.logCustomSearches) console.log(`Nazha-Client-Debug | SEARCHING | - ${query} on nazha-client`);
+  if (player.LavalinkManager.options.advancedOptions.debugOptions.logCustomSearches) console.log(`Nazha-Client-Debug | SEARCHING | - ${query} on Nazha-Client`);
   player.LavalinkManager.utils.validateQueryString(player.node, query);
   try {
     const requestUrl = new URL("https://bandcamp.com/api/nusearch/2/autocomplete");
@@ -4466,7 +4466,7 @@ var LavalinkManager = class extends import_events2.EventEmitter {
       client: {
         ...options?.client,
         id: options?.client?.id,
-        username: options?.client?.username ?? "nazha-client"
+        username: options?.client?.username ?? "lavalink-client"
       },
       sendToShard: options?.sendToShard,
       autoMove: options?.autoMove ?? false,
@@ -4779,7 +4779,7 @@ var LavalinkManager = class extends import_events2.EventEmitter {
           functionLayer: "LavalinkManager > sendRawData()"
         });
       }
-      if (this.options?.advancedOptions?.debugOptions?.noAudio === true) console.debug("Nazha-Client-Debug | NO-AUDIO [::] sendRawData function, manager is not initated yet");
+      if (this.options?.advancedOptions?.debugOptions?.noAudio === true) console.debug("Lavalink-Client-Debug | NO-AUDIO [::] sendRawData function, manager is not initated yet");
       return;
     }
     if (!("t" in data)) {
@@ -4790,7 +4790,7 @@ var LavalinkManager = class extends import_events2.EventEmitter {
           functionLayer: "LavalinkManager > sendRawData()"
         });
       }
-      if (this.options?.advancedOptions?.debugOptions?.noAudio === true) console.debug("Nazha-Client-Debug | NO-AUDIO [::] sendRawData function, no 't' in payload-data of the raw event:", data);
+      if (this.options?.advancedOptions?.debugOptions?.noAudio === true) console.debug("Lavalink-Client-Debug | NO-AUDIO [::] sendRawData function, no 't' in payload-data of the raw event:", data);
       return;
     }
     if ("CHANNEL_DELETE" === data.t) {
@@ -4809,7 +4809,7 @@ var LavalinkManager = class extends import_events2.EventEmitter {
             functionLayer: "LavalinkManager > sendRawData()"
           });
         }
-        if (this.options?.advancedOptions?.debugOptions?.noAudio === true) console.debug("Nazha-Client-Debug | NO-AUDIO [::] sendRawData function, no update data found in payload:", data);
+        if (this.options?.advancedOptions?.debugOptions?.noAudio === true) console.debug("Lavalink-Client-Debug | NO-AUDIO [::] sendRawData function, no update data found in payload:", data);
         return;
       }
       if (!("token" in update) && !("session_id" in update)) {
@@ -4820,7 +4820,7 @@ var LavalinkManager = class extends import_events2.EventEmitter {
             functionLayer: "LavalinkManager > sendRawData()"
           });
         }
-        if (this.options?.advancedOptions?.debugOptions?.noAudio === true) console.debug("Nazha-Client-Debug | NO-AUDIO [::] sendRawData function, no 'token' nor 'session_id' found in payload:", data);
+        if (this.options?.advancedOptions?.debugOptions?.noAudio === true) console.debug("Lavalink-Client-Debug | NO-AUDIO [::] sendRawData function, no 'token' nor 'session_id' found in payload:", data);
         return;
       }
       const player = this.getPlayer(update.guild_id);
@@ -4832,7 +4832,7 @@ var LavalinkManager = class extends import_events2.EventEmitter {
             functionLayer: "LavalinkManager > sendRawData()"
           });
         }
-        if (this.options?.advancedOptions?.debugOptions?.noAudio === true) console.debug("Nazha-Client-Debug | NO-AUDIO [::] sendRawData function, No Lavalink Player found via key: 'guild_id' of update-data:", update);
+        if (this.options?.advancedOptions?.debugOptions?.noAudio === true) console.debug("Lavalink-Client-Debug | NO-AUDIO [::] sendRawData function, No Lavalink Player found via key: 'guild_id' of update-data:", update);
         return;
       }
       if (player.get("internal_destroystatus") === true) {
@@ -4843,7 +4843,7 @@ var LavalinkManager = class extends import_events2.EventEmitter {
             functionLayer: "LavalinkManager > sendRawData()"
           });
         }
-        if (this.options?.advancedOptions?.debugOptions?.noAudio === true) console.debug("Nazha-Client-Debug | NO-AUDIO [::] sendRawData function, Player is in a destroying state. can't signal the voice states");
+        if (this.options?.advancedOptions?.debugOptions?.noAudio === true) console.debug("Lavalink-Client-Debug | NO-AUDIO [::] sendRawData function, Player is in a destroying state. can't signal the voice states");
         return;
       }
       if ("token" in update) {
@@ -4855,7 +4855,7 @@ var LavalinkManager = class extends import_events2.EventEmitter {
             message: `Can't send updatePlayer for voice token session - Missing sessionId :: ${safeStringify({ voice: { token: update.token, endpoint: update.endpoint, sessionId: sessionId2Use }, update, playerVoice: player.voice }, 2)}`,
             functionLayer: "LavalinkManager > sendRawData()"
           });
-          if (this.options?.advancedOptions?.debugOptions?.noAudio === true) console.debug("Nazha-Client-Debug | NO-AUDIO [::] sendRawData function, Can't send updatePlayer for voice token session - Missing sessionId", { voice: { token: update.token, endpoint: update.endpoint, sessionId: sessionId2Use }, update, playerVoice: player.voice });
+          if (this.options?.advancedOptions?.debugOptions?.noAudio === true) console.debug("Lavalink-Client-Debug | NO-AUDIO [::] sendRawData function, Can't send updatePlayer for voice token session - Missing sessionId", { voice: { token: update.token, endpoint: update.endpoint, sessionId: sessionId2Use }, update, playerVoice: player.voice });
         } else {
           await player.node.updatePlayer({
             guildId: player.guildId,
@@ -4874,7 +4874,7 @@ var LavalinkManager = class extends import_events2.EventEmitter {
               functionLayer: "LavalinkManager > sendRawData()"
             });
           }
-          if (this.options?.advancedOptions?.debugOptions?.noAudio === true) console.debug("Nazha-Client-Debug | NO-AUDIO [::] sendRawData function, Sent updatePlayer for voice token session", { voice: { token: update.token, endpoint: update.endpoint, sessionId: sessionId2Use }, playerVoice: player.voice, update });
+          if (this.options?.advancedOptions?.debugOptions?.noAudio === true) console.debug("Lavalink-Client-Debug | NO-AUDIO [::] sendRawData function, Sent updatePlayer for voice token session", { voice: { token: update.token, endpoint: update.endpoint, sessionId: sessionId2Use }, playerVoice: player.voice, update });
         }
         return;
       }
@@ -4889,7 +4889,7 @@ var LavalinkManager = class extends import_events2.EventEmitter {
             functionLayer: "LavalinkManager > sendRawData()"
           });
         }
-        if (this.options?.advancedOptions?.debugOptions?.noAudio === true) console.debug("Nazha-Client-Debug | NO-AUDIO [::] sendRawData function, voice update user is not equal to provided client id of the manageroptions#client#id", "user:", update.user_id, "manager client id:", this.options?.client.id);
+        if (this.options?.advancedOptions?.debugOptions?.noAudio === true) console.debug("Lavalink-Client-Debug | NO-AUDIO [::] sendRawData function, voice update user is not equal to provided client id of the manageroptions#client#id", "user:", update.user_id, "manager client id:", this.options?.client.id);
         return;
       }
       if (update.channel_id) {
@@ -4903,7 +4903,7 @@ var LavalinkManager = class extends import_events2.EventEmitter {
               functionLayer: "LavalinkManager > sendRawData()"
             });
           }
-          if (this.options?.advancedOptions?.debugOptions?.noAudio === true) console.debug(`Nazha-Client-Debug | NO-AUDIO [::] sendRawData function, Function to assing sessionId provided, but no found in Payload: ${safeStringify(update, 2)}`);
+          if (this.options?.advancedOptions?.debugOptions?.noAudio === true) console.debug(`Lavalink-Client-Debug | NO-AUDIO [::] sendRawData function, Function to assing sessionId provided, but no found in Payload: ${safeStringify(update, 2)}`);
         }
         player.voiceChannelId = update.channel_id;
         const selfMuteChanged = typeof update.self_mute === "boolean" && player.voiceState.selfMute !== update.self_mute;

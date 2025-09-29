@@ -1498,7 +1498,8 @@ type NazhaClientSearchPlatform = "bcsearch";
 type NazhaClientSearchPlatformResolve = "bandcamp" | "bc";
 type LavalinkSearchPlatform = "ytsearch" | "ytmsearch" | "scsearch" | "bcsearch" | LavaSrcSearchPlatform | DuncteSearchPlatform | JioSaavnSearchPlatform | NazhaClientSearchPlatform;
 type ClientCustomSearchPlatformUtils = "local" | "http" | "https" | "link" | "uri";
-type ClientSearchPlatform = ClientCustomSearchPlatformUtils | "youtube" | "yt" | "youtube music" | "youtubemusic" | "ytm" | "musicyoutube" | "music youtube" | "soundcloud" | "sc" | "am" | "apple music" | "applemusic" | "apple" | "musicapple" | "music apple" | "sp" | "spsuggestion" | "spotify" | "spotify.com" | "spotifycom" | "dz" | "deezer" | "yandex" | "yandex music" | "yandexmusic" | "vk" | "vk music" | "vkmusic" | "tidal" | "tidal music" | "qobuz" | "flowerytts" | "flowery" | "flowery.tts" | NazhaClientSearchPlatformResolve | NazhaClientSearchPlatform | "js" | "jiosaavn" | "td" | "tidal" | "tdrec";
+type ClientSearchPlatform = ClientCustomSearchPlatformUtils | // for file/link requests
+"youtube" | "yt" | "youtube music" | "youtubemusic" | "ytm" | "musicyoutube" | "music youtube" | "soundcloud" | "sc" | "am" | "apple music" | "applemusic" | "apple" | "musicapple" | "music apple" | "sp" | "spsuggestion" | "spotify" | "spotify.com" | "spotifycom" | "dz" | "deezer" | "yandex" | "yandex music" | "yandexmusic" | "vk" | "vk music" | "vkmusic" | "tidal" | "tidal music" | "qobuz" | "flowerytts" | "flowery" | "flowery.tts" | NazhaClientSearchPlatformResolve | NazhaClientSearchPlatform | "js" | "jiosaavn" | "td" | "tidal" | "tdrec";
 type SearchPlatform = LavalinkSearchPlatform | ClientSearchPlatform;
 type SourcesRegex = "YoutubeRegex" | "YoutubeMusicRegex" | "SoundCloudRegex" | "SoundCloudMobileRegex" | "DeezerTrackRegex" | "DeezerArtistRegex" | "DeezerEpisodeRegex" | "DeezerMixesRegex" | "DeezerPageLinkRegex" | "DeezerPlaylistRegex" | "DeezerAlbumRegex" | "AllDeezerRegex" | "AllDeezerRegexWithoutPageLink" | "SpotifySongRegex" | "SpotifyPlaylistRegex" | "SpotifyArtistRegex" | "SpotifyEpisodeRegex" | "SpotifyShowRegex" | "SpotifyAlbumRegex" | "AllSpotifyRegex" | "mp3Url" | "m3uUrl" | "m3u8Url" | "mp4Url" | "m4aUrl" | "wavUrl" | "aacpUrl" | "tiktok" | "mixcloud" | "musicYandex" | "radiohost" | "bandcamp" | "jiosaavn" | "appleMusic" | "tidal" | "TwitchTv" | "vimeo";
 interface PlaylistInfo {
@@ -2656,25 +2657,66 @@ interface LavalinkManagerEvents<CustomPlayerT extends Player = Player> {
      * @event Manager#trackError
      */
     "SegmentSkipped": (player: CustomPlayerT, track: Track | UnresolvedTrack | null, payload: SponsorBlockSegmentSkipped) => void;
+    /**
+     * SPONSORBLOCK-PLUGIN EVENT
+     * Emitted when a specific Chapter starts playing
+     * @link https://github.com/topi314/Sponsorblock-Plugin#chapterstarted
+     * @event Manager#trackError
+     */
     "ChapterStarted": (player: CustomPlayerT, track: Track | UnresolvedTrack | null, payload: SponsorBlockChapterStarted) => void;
+    /**
+     * SPONSORBLOCK-PLUGIN EVENT
+     * Emitted when Chapters are loaded
+     * @link https://github.com/topi314/Sponsorblock-Plugin#chaptersloaded
+     * @event Manager#trackError
+     */
     "ChaptersLoaded": (player: CustomPlayerT, track: Track | UnresolvedTrack | null, payload: SponsorBlockChaptersLoaded) => void;
+    /**
+     * Lavalink-Client Debug Event
+     * Emitted for several erros, and logs within lavalink-client, if managerOptions.advancedOptions.enableDebugEvents is true
+     * Useful for debugging the lavalink-client
+     *
+     * @event Manager#debug
+     */
     "debug": (eventKey: DebugEvents, eventData: {
         message: string;
         state: "log" | "warn" | "error";
         error?: Error | string;
         functionLayer: string;
     }) => void;
+    /**
+     * Emitted when a Lyrics line is received
+     * @link https://github.com/topi314/LavaLyrics
+     * @event Manager#LyricsLine
+     */
     "LyricsLine": (player: CustomPlayerT, track: Track | UnresolvedTrack | null, payload: LyricsLineEvent) => void;
+    /**
+     * Emitted when a Lyrics is found
+     * @link https://github.com/topi314/LavaLyrics
+     * @event Manager#LyricsFound
+     */
     "LyricsFound": (player: CustomPlayerT, track: Track | UnresolvedTrack | null, payload: LyricsFoundEvent) => void;
+    /**
+     * Emitted when a Lyrics is not found
+     * @link https://github.com/topi314/LavaLyrics
+     * @event Manager#LyricsNotFound
+     */
     "LyricsNotFound": (player: CustomPlayerT, track: Track | UnresolvedTrack | null, payload: LyricsNotFoundEvent) => void;
     "playerResumed": (player: CustomPlayerT, track: Track | UnresolvedTrack | null) => void;
     "playerPaused": (player: CustomPlayerT, track: Track | UnresolvedTrack | null) => void;
 }
+/**
+ * The Bot client Options needed for the manager
+ */
 interface BotClientOptions {
+    /** Bot Client Id */
     id: string;
+    /** Bot Client Username */
     username?: string;
+    /** So users can pass entire objects / classes */
     [x: string | number | symbol]: unknown;
 }
+/** Sub Manager Options, for player specific things */
 interface ManagerPlayerOptions<CustomPlayerT extends Player = Player> {
     /** If the Lavalink Volume should be decremented by x number */
     volumeDecrementer?: number;
@@ -2684,7 +2726,9 @@ interface ManagerPlayerOptions<CustomPlayerT extends Player = Player> {
     defaultSearchPlatform?: SearchPlatform;
     /** Applies the volume via a filter, not via the lavalink volume transformer */
     applyVolumeAsFilter?: boolean;
+    /** Transforms the saved data of a requested user */
     requesterTransformer?: (requester: unknown) => unknown;
+    /** What lavalink-client should do when the player reconnects */
     onDisconnect?: {
         /** Try to reconnect? -> If fails -> Destroy */
         autoReconnect?: boolean;
