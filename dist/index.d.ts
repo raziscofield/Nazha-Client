@@ -1,114 +1,55 @@
 import { EventEmitter } from 'events';
 import internal from 'stream';
 
-/** The Audio Outputs type */
 type AudioOutputs = "mono" | "stereo" | "left" | "right";
-/** The "active" / "disabled" Player Filters */
 interface PlayerFilters {
-    /** Sets nightcore to false, and vaporwave to false */
     custom: boolean;
-    /** Sets custom to false, and vaporwave to false */
     nightcore: boolean;
-    /** Sets custom to false, and nightcore to false */
     vaporwave: boolean;
-    /** If rotation filter is enabled / not */
     rotation: boolean;
-    /** if karaoke filter is enabled / not */
     karaoke: boolean;
-    /** if tremolo filter is enabled / not */
     tremolo: boolean;
-    /** if vibrato filter is enabled / not */
     vibrato: boolean;
     lowPass: boolean;
-    /** audio Output (default stereo, mono sounds the fullest and best for not-stereo tracks) */
     audioOutput: AudioOutputs;
-    /** Lavalink Volume FILTER (not player Volume, think of it as a gain booster) */
     volume: boolean;
-    /** Filters for the Lavalink Filter Plugin */
     lavalinkFilterPlugin: {
-        /** if echo filter is enabled / not */
         echo: boolean;
-        /** if reverb filter is enabled / not */
         reverb: boolean;
     };
     lavalinkLavaDspxPlugin: {
-        /** if lowPass filter is enabled / not */
         lowPass: boolean;
-        /** if highPass filter is enabled / not */
         highPass: boolean;
-        /** if normalization filter is enabled / not */
         normalization: boolean;
-        /** if echo filter is enabled / not */
         echo: boolean;
     };
 }
-/**
- * There are 15 bands (0-14) that can be changed.
- * "gain" is the multiplier for the given band.
- * The default value is 0.
- *  Valid values range from -0.25 to 1.0, where -0.25 means the given band is completely muted, and 0.25 means it is doubled.
- * Modifying the gain could also change the volume of the output.
- */
 interface EQBand {
-    /** On what band position (0-14) it should work */
     band: IntegerNumber | number;
-    /** The gain (-0.25 to 1.0) */
     gain: FloatNumber | number;
 }
-/**
- * Uses equalization to eliminate part of a band, usually targeting vocals.
- */
 interface KaraokeFilter {
-    /** The level (0 to 1.0 where 0.0 is no effect and 1.0 is full effect) */
     level?: number;
-    /** The mono level (0 to 1.0 where 0.0 is no effect and 1.0 is full effect) */
     monoLevel?: number;
-    /** The filter band (in Hz) */
     filterBand?: number;
-    /**	The filter width */
     filterWidth?: number;
 }
-/**
- * Changes the speed, pitch, and rate
- */
 interface TimescaleFilter {
-    /** The playback speed 0.0 ≤ x */
     speed?: number;
-    /** The pitch 0.0 ≤ x */
     pitch?: number;
-    /** The rate 0.0 ≤ x */
     rate?: number;
 }
-/**
- * Uses amplification to create a shuddering effect, where the volume quickly oscillates.
- * Demo: https://en.wikipedia.org/wiki/File:Fuse_Electronics_Tremolo_MK-III_Quick_Demo.ogv
- */
 interface TremoloFilter {
-    /** The frequency 0.0 < x */
     frequency?: number;
-    /** The tremolo depth 0.0 < x ≤ 1.0 */
     depth?: number;
 }
-/**
- * Similar to tremolo. While tremolo oscillates the volume, vibrato oscillates the pitch.
- */
 interface VibratoFilter {
-    /** The frequency 0.0 < x ≤ 14.0 */
     frequency?: number;
-    /** The vibrato depth 0.0 < x ≤ 1.0 */
     depth?: number;
 }
-/**
- * Rotates the sound around the stereo channels/user headphones (aka Audio Panning).
- * It can produce an effect similar to https://youtu.be/QB9EB8mTKcc (without the reverb).
- */
 interface RotationFilter {
-    /** The frequency of the audio rotating around the listener in Hz. 0.2 is similar to the example video above */
     rotationHz?: number;
 }
-/**
- * Distortion effect. It can generate some pretty unique audio effects.
- */
 interface DistortionFilter {
     sinOffset?: number;
     sinScale?: number;
@@ -119,32 +60,15 @@ interface DistortionFilter {
     offset?: number;
     scale?: number;
 }
-/**
- * Mixes both channels (left and right), with a configurable factor on how much each channel affects the other.
- * With the defaults, both channels are kept independent of each other.
- * Setting all factors to 0.5 means both channels get the same audio.
- */
 interface ChannelMixFilter {
-    /** The left to left channel mix factor (0.0 ≤ x ≤ 1.0) */
     leftToLeft?: number;
-    /** The left to right channel mix factor (0.0 ≤ x ≤ 1.0) */
     leftToRight?: number;
-    /** The right to left channel mix factor (0.0 ≤ x ≤ 1.0) */
     rightToLeft?: number;
-    /** The right to right channel mix factor (0.0 ≤ x ≤ 1.0) */
     rightToRight?: number;
 }
-/**
- * Higher frequencies get suppressed, while lower frequencies pass through this filter, thus the name low pass.
- * Any smoothing values equal to or less than 1.0 will disable the filter.
- */
 interface LowPassFilter {
-    /** The smoothing factor (1.0 < x) */
     smoothing?: number;
 }
-/**
- * Filter Data stored in the Client and partially sent to Lavalink
- */
 interface FilterData {
     volume?: number;
     karaoke?: KaraokeFilter;
@@ -184,9 +108,6 @@ interface FilterData {
         };
     };
 }
-/**
- * Actual Filter Data sent to Lavalink
- */
 interface LavalinkFilterData extends FilterData {
     equalizer?: EQBand[];
 }
@@ -935,370 +856,187 @@ interface StoredQueue {
     tracks: (Track | UnresolvedTrack)[];
 }
 interface QueueStoreManager {
-    /** @async get a Value (MUST RETURN UNPARSED!) */
     get: (guildId: string) => Awaitable<StoredQueue | string>;
-    /** @async Set a value inside a guildId (MUST BE UNPARSED) */
     set: (guildId: string, value: StoredQueue | string) => Awaitable<void | boolean>;
-    /** @async Delete a Database Value based of it's guildId */
     delete: (guildId: string) => Awaitable<void | boolean>;
-    /** @async Transform the value(s) inside of the QueueStoreManager (IF YOU DON'T NEED PARSING/STRINGIFY, then just return the value) */
     stringify: (value: StoredQueue | string) => Awaitable<StoredQueue | string>;
-    /** @async Parse the saved value back to the Queue (IF YOU DON'T NEED PARSING/STRINGIFY, then just return the value) */
     parse: (value: StoredQueue | string) => Awaitable<Partial<StoredQueue>>;
 }
 interface ManagerQueueOptions<CustomPlayerT extends Player = Player> {
-    /** Maximum Amount of tracks for the queue.previous array. Set to 0 to not save previous songs. Defaults to 25 Tracks */
     maxPreviousTracks?: number;
-    /** Custom Queue Store option */
     queueStore?: QueueStoreManager;
-    /** Custom Queue Watcher class */
     queueChangesWatcher?: QueueChangesWatcher;
 }
 interface QueueChangesWatcher {
-    /** get a Value (MUST RETURN UNPARSED!) */
     tracksAdd: (guildId: string, tracks: (Track | UnresolvedTrack)[], position: number, oldStoredQueue: StoredQueue, newStoredQueue: StoredQueue) => void;
-    /** Set a value inside a guildId (MUST BE UNPARSED) */
     tracksRemoved: (guildId: string, tracks: (Track | UnresolvedTrack)[], position: number | number[], oldStoredQueue: StoredQueue, newStoredQueue: StoredQueue) => void;
-    /** Set a value inside a guildId (MUST BE UNPARSED) */
     shuffled: (guildId: string, oldStoredQueue: StoredQueue, newStoredQueue: StoredQueue) => void;
 }
 
 type DestroyReasonsType = keyof typeof DestroyReasons | string;
 type DisconnectReasonsType = keyof typeof DisconnectReasons | string;
 interface PlayerJson {
-    /** Guild Id where the player was playing in */
     guildId: string;
-    /** Options provided to the player */
     options: PlayerOptions;
-    /** Voice Channel Id the player was playing in */
     voiceChannelId: string;
-    /** Text Channel Id the player was synced to */
     textChannelId?: string;
-    /** Position the player was at */
     position: number;
-    /** Lavalink's position the player was at */
     lastPosition: number;
-    /** Last time the position was sent from lavalink */
     lastPositionChange: number | null;
-    /** Volume in % from the player (without volumeDecrementer) */
     volume: number;
-    /** Real Volume used in lavalink (with the volumeDecrementer) */
     lavalinkVolume: number;
-    /** The repeatmode from the player */
     repeatMode: RepeatMode;
-    /** Pause state */
     paused: boolean;
-    /** Wether the player was playing or not */
     playing: boolean;
-    /** When the player was created */
     createdTimeStamp?: number;
-    /** All current used fitlers Data */
     filters: FilterData;
-    /** The player's ping object */
     ping: {
-        /** Ping to the voice websocket server */
         ws: number;
-        /** Avg. calc. Ping to the lavalink server */
         lavalink: number;
     };
-    /** Equalizer Bands used in lavalink */
     equalizer: EQBand[];
-    /** The Id of the last used node */
     nodeId?: string;
-    /** The SessionId of the node */
     nodeSessionId?: string;
-    /** The stored queue */
     queue?: StoredQueue;
 }
 type RepeatMode = "queue" | "track" | "off";
 interface PlayerOptions {
-    /** Guild id of the player */
     guildId: string;
-    /** The Voice Channel Id */
     voiceChannelId: string;
-    /** The Text Channel Id of the Player */
     textChannelId?: string;
-    /** instantly change volume with the one play request */
     volume?: number;
-    /** VC Region for node selections */
     vcRegion?: string;
-    /** if it should join deafened */
     selfDeaf?: boolean;
-    /** If it should join muted */
     selfMute?: boolean;
-    /** If it should use a specific lavalink node */
     node?: LavalinkNode | string;
-    /** If when applying filters, it should use the insta apply filters fix  */
     instaUpdateFiltersFix?: boolean;
-    /** If a volume should be applied via filters instead of lavalink-volume */
     applyVolumeAsFilter?: boolean;
-    /** Custom Data for the player get/set datastorage */
     customData?: anyObject;
 }
 type anyObject = {
     [key: string | number]: string | number | null | anyObject;
 };
 interface BasePlayOptions {
-    /** The position to start the track. */
     position?: number;
-    /** The position to end the track. */
     endTime?: number;
-    /** If to start "paused" */
     paused?: boolean;
-    /** The Volume to start with */
     volume?: number;
-    /** The Lavalink Filters to use | only with the new REST API */
     filters?: Partial<LavalinkFilterData>;
-    /** Voice Update for Lavalink */
     voice?: LavalinkPlayerVoiceOptions;
 }
 interface LavalinkPlayOptions extends BasePlayOptions {
-    /** Which Track to play | don't provide, if it should pick from the Queue */
     track?: {
-        /** The track encoded base64 string to use instead of the one from the queue system */
         encoded?: Base64 | null;
-        /** The identifier of the track to use */
         identifier?: string;
-        /** Custom User Data for the track to provide, will then be on the userData object from the track */
         userData?: anyObject;
-        /** The Track requester for when u provide encodedTrack / identifer */
         requester?: unknown;
     };
 }
 interface PlayOptions extends LavalinkPlayOptions {
-    /** Whether to not replace the track if a play payload is sent. */
     noReplace?: boolean;
-    /** Adds track on queue and skips to it */
     clientTrack?: Track | UnresolvedTrack;
 }
 
-/** Ability to manipulate fetch requests */
 type ModifyRequest = (options: RequestInit & {
     path: string;
     extraQueryUrlParams?: URLSearchParams;
 }) => void;
 type SponsorBlockSegment = "sponsor" | "selfpromo" | "interaction" | "intro" | "outro" | "preview" | "music_offtopic" | "filler";
-/**
- * Node Options for creating a lavalink node
- */
 interface LavalinkNodeOptions {
-    /** The Lavalink Server-Ip / Domain-URL */
     host: string;
-    /** The Lavalink Connection Port */
     port: number;
-    /** The Lavalink Password / Authorization-Key */
     authorization: string;
-    /** Does the Server use ssl (https) */
     secure?: boolean;
-    /** RESUME THE PLAYER? by providing a sessionid on the node-creation */
     sessionId?: string;
-    /** Add a Custom ID to the node, for later use */
     id?: string;
-    /** Voice Regions of this Node */
     regions?: string[];
-    /** The retryAmount for the node. */
     retryAmount?: number;
-    /** The retryDelay for the node. */
     retryDelay?: number;
-    /** signal for cancelling requests - default: AbortSignal.timeout(options.requestSignalTimeoutMS || 10000) - put <= 0 to disable */
     requestSignalTimeoutMS?: number;
-    /** Close on error */
     closeOnError?: boolean;
-    /** Heartbeat interval , set to <= 0 to disable heartbeat system */
     heartBeatInterval?: 30000;
-    /** Recommended, to check wether the client is still connected or not on the stats endpoint */
     enablePingOnStatsCheck?: boolean;
 }
-/**
- * Memory Stats object from lavalink
- */
 interface MemoryStats {
-    /** The free memory of the allocated amount. */
     free: number;
-    /** The used memory of the allocated amount. */
     used: number;
-    /** The total allocated memory. */
     allocated: number;
-    /** The reservable memory. */
     reservable: number;
 }
-/**
- * CPU Stats object from lavalink
- */
 interface CPUStats {
-    /** The core amount the host machine has. */
     cores: number;
-    /** The system load. */
     systemLoad: number;
-    /** The lavalink load. */
     lavalinkLoad: number;
 }
-/**
- * FrameStats Object from lavalink
- */
 interface FrameStats {
-    /** The amount of sent frames. */
     sent?: number;
-    /** The amount of nulled frames. */
     nulled?: number;
-    /** The amount of deficit frames. */
     deficit?: number;
 }
-/**
- * BaseNodeStats object from Lavalink
- */
 interface BaseNodeStats {
-    /** The amount of players on the node. */
     players: number;
-    /** The amount of playing players on the node. */
     playingPlayers: number;
-    /** The uptime for the node. */
     uptime: number;
-    /** The memory stats for the node. */
     memory: MemoryStats;
-    /** The cpu stats for the node. */
     cpu: CPUStats;
-    /** The frame stats for the node. */
     frameStats: FrameStats;
 }
-/**
- * Interface for nodeStats from lavalink
- */
 interface NodeStats extends BaseNodeStats {
-    /** The frame stats for the node. */
     frameStats: FrameStats;
 }
-/**
- * Entire lavalink information object from lavalink
- */
 interface LavalinkInfo {
-    /** The version of this Lavalink server */
     version: VersionObject;
-    /** The millisecond unix timestamp when this Lavalink jar was built */
     buildTime: number;
-    /** The git information of this Lavalink server */
     git: GitObject;
-    /** The JVM version this Lavalink server runs on */
     jvm: string;
-    /** The Lavaplayer version being used by this server */
     lavaplayer: string;
-    /** The enabled source managers for this server */
     sourceManagers: string[];
-    /** The enabled filters for this server */
     filters: string[];
-    /** The enabled plugins for this server */
     plugins: PluginObject[];
 }
-/**
- * Lavalink's version object from lavalink
- */
 interface VersionObject {
-    /** The full version string of this Lavalink server */
     semver: string;
-    /** The major version of this Lavalink server */
     major: number;
-    /** The minor version of this Lavalink server */
     minor: number;
-    /** The patch version of this Lavalink server */
     patch: internal;
-    /** The pre-release version according to semver as a . separated list of identifiers */
     preRelease?: string;
-    /** The build metadata according to semver as a . separated list of identifiers */
     build?: string;
 }
-/**
- * Git information object from lavalink
- */
 interface GitObject {
-    /** The branch this Lavalink server was built on */
     branch: string;
-    /** The commit this Lavalink server was built on */
     commit: string;
-    /** The millisecond unix timestamp for when the commit was created */
     commitTime: string;
 }
-/**
- * Lavalink's plugins object from lavalink's plugin
- */
 interface PluginObject {
-    /** The name of the plugin */
     name: string;
-    /** The version of the plugin */
     version: string;
 }
 interface LyricsResult {
-    /**The name of the source */
     sourceName: string;
-    /**The name of the provider */
     provider: string;
-    /**The result text */
     text: string | null;
-    /**The lyrics lines */
     lines: LyricsLine[];
-    /**Information about the plugin */
     plugin: PluginInfo;
 }
 interface LyricsLine {
-    /**The millisecond timestamp */
     timestamp: number;
-    /**The line duration in milliseconds */
     duration: number | null;
-    /**The line text */
     line: string;
-    /**Information about the plugin */
     plugin: PluginInfo;
 }
 type LavalinkNodeIdentifier = string;
 interface NodeManagerEvents {
-    /**
-     * Emitted when a Node is created.
-     * @event Manager.nodeManager#create
-     */
     "create": (node: LavalinkNode) => void;
-    /**
-     * Emitted when a Node is destroyed.
-     * @event Manager.nodeManager#destroy
-     */
     "destroy": (node: LavalinkNode, destroyReason?: DestroyReasonsType) => void;
-    /**
-     * Emitted when a Node is connected.
-     * @event Manager.nodeManager#connect
-     */
     "connect": (node: LavalinkNode) => void;
-    /**
-     * Emitted when a Node is reconnecting.
-     * @event Manager.nodeManager#reconnecting
-    */
     "reconnecting": (node: LavalinkNode) => void;
-    /**
-     * Emitted When a node starts to reconnect (if you have a reconnection delay, the reconnecting event will be emitted after the retryDelay.)
-     * Useful to check wether the internal node reconnect system works or not
-     * @event Manager.nodeManager#reconnectinprogress
-     */
     "reconnectinprogress": (node: LavalinkNode) => void;
-    /**
-     * Emitted when a Node is disconnects.
-     * @event Manager.nodeManager#disconnect
-    */
     "disconnect": (node: LavalinkNode, reason: {
         code?: number;
         reason?: string;
     }) => void;
-    /**
-     * Emitted when a Node is error.
-     * @event Manager.nodeManager#error
-    */
     "error": (node: LavalinkNode, error: Error, payload?: unknown) => void;
-    /**
-     * Emits every single Node event.
-     * @event Manager.nodeManager#raw
-    */
     "raw": (node: LavalinkNode, payload: unknown) => void;
-    /**
-     * Emits when the node connects resumed. You then need to create all players within this event for your usecase.
-     * Aka for that you need to be able to save player data like vc channel + text channel in a db and then sync it again
-     * @event Manager.nodeManager#nodeResumed
-     */
     "resumed": (node: LavalinkNode, payload: {
         resumed: true;
         sessionId: string;
@@ -2470,219 +2208,64 @@ declare class NodeManager extends EventEmitter {
     deleteNode(node: LavalinkNodeIdentifier | LavalinkNode, movePlayers?: boolean): void;
 }
 
-/**
- * The events from the lavalink Manager
- */
 interface LavalinkManagerEvents<CustomPlayerT extends Player = Player> {
-    /**
-     * Emitted when a Track started playing.
-     * @event Manager#trackStart
-     */
     "trackStart": (player: CustomPlayerT, track: Track | null, payload: TrackStartEvent) => void;
-    /**
-     * Emitted when a Track finished.
-     * @event Manager#trackEnd
-     */
     "trackEnd": (player: CustomPlayerT, track: Track | null, payload: TrackEndEvent) => void;
-    /**
-     * Emitted when a Track got stuck while playing.
-     * @event Manager#trackStuck
-     */
     "trackStuck": (player: CustomPlayerT, track: Track | null, payload: TrackStuckEvent) => void;
-    /**
-     * Emitted when a Track errored.
-     * @event Manager#trackError
-     */
     "trackError": (player: CustomPlayerT, track: Track | UnresolvedTrack | null, payload: TrackExceptionEvent) => void;
-    /**
-     * Emitted when the Playing finished and no more tracks in the queue.
-     * @event Manager#queueEnd
-     */
     "queueEnd": (player: CustomPlayerT, track: Track | UnresolvedTrack | null, payload: TrackEndEvent | TrackStuckEvent | TrackExceptionEvent) => void;
-    /**
-     * Emitted when a Player is created.
-     * @event Manager#playerCreate
-     */
     "playerCreate": (player: CustomPlayerT) => void;
-    /**
-     * Emitted when a Player is moved within the channel.
-     * @event Manager#playerMove
-     */
     "playerMove": (player: CustomPlayerT, oldVoiceChannelId: string, newVoiceChannelId: string) => void;
-    /**
-     * Emitted when a Player is disconnected from a channel.
-     * @event Manager#playerDisconnect
-     */
     "playerDisconnect": (player: CustomPlayerT, voiceChannelId: string) => void;
-    /**
-     * Emitted when a Node-Socket got closed for a specific Player.
-     * Usually emits when the audio websocket to discord is closed, This can happen for various reasons (normal and abnormal), e.g. when using an expired voice server update. 4xxx codes are usually bad.
-     *
-     * So this is just information, normally lavalink should handle disconnections
-     *
-     * Discord Docs:
-     * @link https://discord.com/developers/docs/topics/opcodes-and-status-codes#voice-voice-close-event-codes
-     *
-     * Lavalink Docs:
-     * @link https://lavalink.dev/api/websocket.html#websocketclosedevent
-     * @event Manager#playerSocketClosed
-     */
     "playerSocketClosed": (player: CustomPlayerT, payload: WebSocketClosedEvent) => void;
-    /**
-     * Emitted when a Player get's destroyed
-     * @event Manager#playerDestroy
-     */
     "playerDestroy": (player: CustomPlayerT, destroyReason?: DestroyReasonsType) => void;
-    /**
-     * Always emits when the player (on lavalink side) got updated
-     * @event Manager#playerUpdate
-     */
     "playerUpdate": (oldPlayerJson: PlayerJson, newPlayer: CustomPlayerT) => void;
-    /**
-     * Emitted when the player's selfMuted or serverMuted state changed (true -> false | false -> true)
-     * @event Manager#playerMuteChange
-     */
     "playerMuteChange": (player: CustomPlayerT, selfMuted: boolean, serverMuted: boolean) => void;
-    /**
-     * Emitted when the player's selfDeafed or serverDeafed state changed (true -> false | false -> true)
-     * @event Manager#playerDeafChange
-     */
     "playerDeafChange": (player: CustomPlayerT, selfDeafed: boolean, serverDeafed: boolean) => void;
-    /**
-     * Emitted when the player's suppressed (true -> false | false -> true)
-     * @event Manager#playerSuppressChange
-     */
     "playerSuppressChange": (player: CustomPlayerT, suppress: boolean) => void;
-    /**
-     * Emitted when the player's queue got empty, and the timeout started
-     * @event Manager#playerQueueEmptyStart
-     */
     "playerQueueEmptyStart": (player: CustomPlayerT, timeoutMs: number) => void;
-    /**
-     * Emitted when the player's queue got empty, and the timeout finished leading to destroying the player
-     * @event Manager#playerQueueEmptyEnd
-     */
     "playerQueueEmptyEnd": (player: CustomPlayerT) => void;
-    /**
-     * Emitted when the player's queue got empty, and the timeout got cancelled becuase a track got re-added to it.
-     * @event Manager#playerQueueEmptyEnd
-     */
     "playerQueueEmptyCancel": (player: CustomPlayerT) => void;
-    /**
-     * Emitted, when a user joins the voice channel, while there is a player existing
-     * @event Manager#playerQueueEmptyStart
-     */
     "playerVoiceJoin": (player: CustomPlayerT, userId: string) => void;
-    /**
-     * Emitted, when a user leaves the voice channel, while there is a player existing
-     * @event Manager#playerQueueEmptyEnd
-     */
     "playerVoiceLeave": (player: CustomPlayerT, userId: string) => void;
-    /**
-     * SPONSORBLOCK-PLUGIN EVENT
-     * Emitted when Segments are loaded
-     * @link https://github.com/topi314/Sponsorblock-Plugin#segmentsloaded
-     * @event Manager#trackError
-     */
     "SegmentsLoaded": (player: CustomPlayerT, track: Track | UnresolvedTrack | null, payload: SponsorBlockSegmentsLoaded) => void;
-    /**
-     * SPONSORBLOCK-PLUGIN EVENT
-     * Emitted when a specific Segment was skipped
-     * @link https://github.com/topi314/Sponsorblock-Plugin#segmentskipped
-     * @event Manager#trackError
-     */
     "SegmentSkipped": (player: CustomPlayerT, track: Track | UnresolvedTrack | null, payload: SponsorBlockSegmentSkipped) => void;
-    /**
-     * SPONSORBLOCK-PLUGIN EVENT
-     * Emitted when a specific Chapter starts playing
-     * @link https://github.com/topi314/Sponsorblock-Plugin#chapterstarted
-     * @event Manager#trackError
-     */
     "ChapterStarted": (player: CustomPlayerT, track: Track | UnresolvedTrack | null, payload: SponsorBlockChapterStarted) => void;
-    /**
-     * SPONSORBLOCK-PLUGIN EVENT
-     * Emitted when Chapters are loaded
-     * @link https://github.com/topi314/Sponsorblock-Plugin#chaptersloaded
-     * @event Manager#trackError
-     */
     "ChaptersLoaded": (player: CustomPlayerT, track: Track | UnresolvedTrack | null, payload: SponsorBlockChaptersLoaded) => void;
-    /**
-     * Nazha-Client Debug Event
-     * Emitted for several erros, and logs within Nazha-Client, if managerOptions.advancedOptions.enableDebugEvents is true
-     * Useful for debugging the Nazha-Client
-     *
-     * @event Manager#debug
-     */
     "debug": (eventKey: DebugEvents, eventData: {
         message: string;
         state: "log" | "warn" | "error";
         error?: Error | string;
         functionLayer: string;
     }) => void;
-    /**
-     * Emitted when a Lyrics line is received
-     * @link https://github.com/topi314/LavaLyrics
-     * @event Manager#LyricsLine
-     */
     "LyricsLine": (player: CustomPlayerT, track: Track | UnresolvedTrack | null, payload: LyricsLineEvent) => void;
-    /**
-     * Emitted when a Lyrics is found
-     * @link https://github.com/topi314/LavaLyrics
-     * @event Manager#LyricsFound
-     */
     "LyricsFound": (player: CustomPlayerT, track: Track | UnresolvedTrack | null, payload: LyricsFoundEvent) => void;
-    /**
-     * Emitted when a Lyrics is not found
-     * @link https://github.com/topi314/LavaLyrics
-     * @event Manager#LyricsNotFound
-     */
     "LyricsNotFound": (player: CustomPlayerT, track: Track | UnresolvedTrack | null, payload: LyricsNotFoundEvent) => void;
     "playerResumed": (player: CustomPlayerT, track: Track | UnresolvedTrack | null) => void;
     "playerPaused": (player: CustomPlayerT, track: Track | UnresolvedTrack | null) => void;
 }
-/**
- * The Bot client Options needed for the manager
- */
 interface BotClientOptions {
-    /** Bot Client Id */
     id: string;
-    /** Bot Client Username */
     username?: string;
-    /** So users can pass entire objects / classes */
     [x: string | number | symbol]: unknown;
 }
-/** Sub Manager Options, for player specific things */
 interface ManagerPlayerOptions<CustomPlayerT extends Player = Player> {
-    /** If the Lavalink Volume should be decremented by x number */
     volumeDecrementer?: number;
-    /** How often it should update the the player Position */
     clientBasedPositionUpdateInterval?: number;
-    /** What should be used as a searchPlatform, if no source was provided during the query */
     defaultSearchPlatform?: SearchPlatform;
-    /** Applies the volume via a filter, not via the lavalink volume transformer */
     applyVolumeAsFilter?: boolean;
-    /** Transforms the saved data of a requested user */
     requesterTransformer?: (requester: unknown) => unknown;
-    /** What Nazha-Client should do when the player reconnects */
     onDisconnect?: {
-        /** Try to reconnect? -> If fails -> Destroy */
         autoReconnect?: boolean;
-        /** Only try to reconnect if there are tracks in the queue */
         autoReconnectOnlyWithTracks?: boolean;
-        /** Instantly destroy player (overrides autoReconnect) | Don't provide == disable feature*/
         destroyPlayer?: boolean;
     };
-    /** Minimum time to play the song before autoPlayFunction is executed (prevents error spamming) Set to 0 to disable it @default 10000 */
     minAutoPlayMs?: number;
-    /** Allows you to declare how many tracks are allowed to error/stuck within a time-frame before player is destroyed @default "{threshold: 35000, maxAmount: 3 }" */
     maxErrorsPerTime?: {
-        /** The threshold time to count errors (recommended is 35s) */
         threshold: number;
-        /** The max amount of errors within the threshold time which are allowed before destroying the player (when errors > maxAmount -> player.destroy()) */
         maxAmount: number;
     };
     onEmptyQueue?: {
-        /** Get's executed onEmptyQueue -> You can do any track queue previous transformations, if you add a track to the queue -> it will play it, if not queueEnd will execute! */
         autoPlayFunction?: (player: CustomPlayerT, lastPlayedTrack: Track) => Promise<void>;
         destroyAfterMs?: number;
     };
@@ -2693,51 +2276,28 @@ type DeepRequired<T> = {
 };
 type RequiredManagerOptions<T extends Player> = DeepRequired<ManagerOptions<T>>;
 type PlayerConstructor<T extends Player = Player> = new (options: PlayerOptions, LavalinkManager: LavalinkManager, dontEmitPlayerCreateEvent?: boolean) => T;
-/** Manager Options used to create the manager */
 interface ManagerOptions<CustomPlayerT extends Player = Player> {
-    /** The Node Options, for all Nodes! (on init) */
     nodes: LavalinkNodeOptions[];
-    /** @async The Function to send the voice connection changes from Lavalink to Discord */
     sendToShard: (guildId: string, payload: GuildShardPayload) => void;
-    /** The Bot Client's Data for Authorization */
     client?: BotClientOptions;
-    /** QueueOptions for all Queues */
     queueOptions?: ManagerQueueOptions<CustomPlayerT>;
-    /** PlayerOptions for all Players */
     playerOptions?: ManagerPlayerOptions<CustomPlayerT>;
-    /** The player class you want to use when creating a player. (can be extendable) */
     playerClass?: PlayerConstructor<CustomPlayerT>;
-    /** If it should skip to the next Track on TrackEnd / TrackError etc. events */
     autoSkip?: boolean;
-    /** If it should automatically move the player to the next node when node is down */
     autoMove?: boolean;
-    /** If it should skip to the next Track if track.resolve errors while trying to play a track. */
     autoSkipOnResolveError?: boolean;
-    /** If it should emit only new (unique) songs and not when a looping track (or similar) is plaid, default false */
     emitNewSongsOnly?: boolean;
-    /** Only allow link requests with links either matching some of that regExp or including some of that string */
     linksWhitelist?: (RegExp | string)[];
-    /** Never allow link requests with links either matching some of that regExp or including some of that string (doesn't even allow if it's whitelisted) */
     linksBlacklist?: (RegExp | string)[];
-    /** If links should be allowed or not. If set to false, it will throw an error if a link was provided. */
     linksAllowed?: boolean;
-    /** Advanced Options for the Library, which may or may not be "library breaking" */
     advancedOptions?: {
-        /** Max duration for that the filter fix duration works (in ms) - default is 8mins */
         maxFilterFixDuration?: number;
-        /** Enable Debug event */
         enableDebugEvents?: boolean;
-        /** optional */
         debugOptions?: {
-            /** For logging custom searches */
             logCustomSearches?: boolean;
-            /** logs for debugging the "no-Audio" playing error */
             noAudio?: boolean;
-            /** For Logging the Destroy function */
             playerDestroy?: {
-                /** To show the debug reason at all times. */
                 debugLog?: boolean;
-                /** If you get 'Error: Use Player#destroy("reason") not LavalinkManager#deletePlayer() to stop the Player' put it on true */
                 dontThrowError?: boolean;
             };
         };
