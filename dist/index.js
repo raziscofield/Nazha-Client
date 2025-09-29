@@ -3304,13 +3304,7 @@ var FilterManager = class {
 
 // src/structures/Queue.ts
 var QueueSaver = class {
-  /**
-   * The queue store manager
-   */
   _;
-  /**
-   * The options for the queue saver
-   */
   options;
   constructor(options) {
     this._ = options?.queueStore || new DefaultQueueStore();
@@ -4161,9 +4155,6 @@ var Player = class {
     this.voiceChannelId = null;
     return this;
   }
-  /**
-   * Destroy the player and disconnect from the voice channel
-   */
   async destroy(reason, disconnect = true) {
     if (this.LavalinkManager.options.advancedOptions?.debugOptions.playerDestroy.debugLog) console.log(`Nazha-Client-Debug | PlayerDestroy [::] destroy Function, [guildId ${this.guildId}] - Destroy-Reason: ${String(reason)}`);
     if (this.get("internal_queueempty")) {

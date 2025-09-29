@@ -449,146 +449,84 @@ declare class FilterManager {
     clearEQ(): Promise<this>;
 }
 
-/** Sourcenames provided by lavalink server */
 type LavalinkSourceNames = "youtube" | "youtubemusic" | "soundcloud" | "bandcamp" | "twitch";
-/** Source Names provided by lava src plugin */
 type LavalinkPlugin_LavaSrc_SourceNames = "deezer" | "spotify" | "applemusic" | "yandexmusic" | "flowery-tts" | "vkmusic" | "tidal" | "qobuz";
-/** Source Names provided by jiosaavan plugin */
 type LavalinkPlugin_JioSaavn_SourceNames = "jiosaavn";
-/** The SourceNames provided by lavalink */
 type SourceNames = LavalinkSourceNames | LavalinkPlugin_LavaSrc_SourceNames | LavalinkPlugin_JioSaavn_SourceNames;
 interface LavalinkTrackInfo {
-    /** The Identifier of the Track */
     identifier: string;
-    /** The Track Title / Name */
     title: string;
-    /** The Name of the Author */
     author: string;
-    /** The duration of the Track */
     length: number;
-    /** The URL of the artwork if available */
     artworkUrl: string | null;
-    /** The URL (aka Link) of the Track called URI */
     uri: string;
-    /** The Source name of the Track, e.g. soundcloud, youtube, spotify */
     sourceName: SourceNames;
-    /** Wether the audio is seekable */
     isSeekable: boolean;
-    /** Wether the audio is of a live stream */
     isStream: boolean;
-    /** If isrc code is available, it's provided */
     isrc: string | null;
 }
 interface TrackInfo {
-    /** The Identifier of the Track */
     identifier: string;
-    /** The Track Title / Name */
     title: string;
-    /** The Name of the Author */
     author: string;
-    /** The duration of the Track */
     duration: number;
-    /** The URL of the artwork if available */
     artworkUrl: string | null;
-    /** The URL (aka Link) of the Track called URI */
     uri: string;
-    /** The Source name of the Track, e.g. soundcloud, youtube, spotify */
     sourceName: SourceNames;
-    /** Wether the audio is seekable */
     isSeekable: boolean;
-    /** Wether the audio is of a live stream */
     isStream: boolean;
-    /** If isrc code is available, it's provided */
     isrc: string | null;
 }
 interface PluginInfo {
-    /** The Type provided by a plugin */
     type?: "album" | "playlist" | "artist" | "recommendations" | string;
-    /** The Identifier provided by a plugin */
     albumName?: string;
-    /** The url of the album */
     albumUrl?: string;
-    /** The url of the album art */
     albumArtUrl?: string;
-    /** The url of the artist */
     artistUrl?: string;
-    /** The url of the artist artwork */
     artistArtworkUrl?: string;
-    /** The url of the preview */
     previewUrl?: string;
-    /** Whether the track is a preview */
     isPreview?: boolean;
-    /** The total number of tracks in the playlist */
     totalTracks?: number;
-    /** The Identifier provided by a plugin */
     identifier?: string;
-    /** The ArtworkUrl provided by a plugin */
     artworkUrl?: string;
-    /** The Author Information provided by a plugin */
     author?: string;
-    /** The Url provided by a Plugin */
     url?: string;
-    /** The Url provided by a Plugin */
     uri?: string;
-    /** You can put specific track information here, to transform the tracks... */
     clientData?: {
         previousTrack?: boolean;
         [key: string]: any;
     };
 }
 interface LavalinkTrack {
-    /** The Base 64 encoded String */
     encoded?: Base64;
-    /** Track Information */
     info: LavalinkTrackInfo;
-    /** Plugin Information from Lavalink */
     pluginInfo: Partial<PluginInfo>;
-    /** The userData Object from when you provide to the lavalink request */
     userData?: anyObject;
 }
 interface Track {
-    /** The Base 64 encoded String */
     encoded?: Base64;
-    /** Track Information */
     info: TrackInfo;
-    /** Plugin Information from Lavalink */
     pluginInfo: Partial<PluginInfo>;
-    /** The Track's Requester */
     requester?: unknown;
-    /** The userData Object from when you provide to the lavalink request */
     userData?: anyObject;
 }
 interface UnresolvedTrackInfo extends Partial<TrackInfo> {
-    /** Required */
     title: string;
 }
 interface UnresolvedQuery extends UnresolvedTrackInfo {
-    /** The base64 of the unresolved track to "encode" */
     encoded?: Base64;
 }
 interface UnresolvedTrack {
-    /** Required */
     resolve: (player: Player) => Promise<void>;
-    /** The Base 64 encoded String */
     encoded?: Base64;
-    /** Track Information */
     info: UnresolvedTrackInfo;
-    /** Plugin Information from Lavalink */
     pluginInfo: Partial<PluginInfo>;
-    /** The userData Object from when you provide to the lavalink request */
     userData?: anyObject;
-    /** The Track's Requester */
     requester?: unknown;
 }
 
 declare class QueueSaver {
-    /**
-     * The queue store manager
-     */
     private _;
-    /**
-     * The options for the queue saver
-     */
     options: {
         maxPreviousTracks: number;
     };
@@ -927,9 +865,6 @@ declare class Player {
      * @returns
      */
     disconnect(force?: boolean): Promise<this>;
-    /**
-     * Destroy the player and disconnect from the voice channel
-     */
     destroy(reason?: DestroyReasons | string, disconnect?: boolean): Promise<this>;
     /**
      * Get the current lyrics of the track currently playing on the guild
@@ -2672,9 +2607,9 @@ interface LavalinkManagerEvents<CustomPlayerT extends Player = Player> {
      */
     "ChaptersLoaded": (player: CustomPlayerT, track: Track | UnresolvedTrack | null, payload: SponsorBlockChaptersLoaded) => void;
     /**
-     * Lavalink-Client Debug Event
-     * Emitted for several erros, and logs within lavalink-client, if managerOptions.advancedOptions.enableDebugEvents is true
-     * Useful for debugging the lavalink-client
+     * Nazha-Client Debug Event
+     * Emitted for several erros, and logs within Nazha-Client, if managerOptions.advancedOptions.enableDebugEvents is true
+     * Useful for debugging the Nazha-Client
      *
      * @event Manager#debug
      */
@@ -2728,7 +2663,7 @@ interface ManagerPlayerOptions<CustomPlayerT extends Player = Player> {
     applyVolumeAsFilter?: boolean;
     /** Transforms the saved data of a requested user */
     requesterTransformer?: (requester: unknown) => unknown;
-    /** What lavalink-client should do when the player reconnects */
+    /** What Nazha-Client should do when the player reconnects */
     onDisconnect?: {
         /** Try to reconnect? -> If fails -> Destroy */
         autoReconnect?: boolean;
